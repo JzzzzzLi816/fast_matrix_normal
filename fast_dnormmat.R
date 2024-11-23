@@ -23,25 +23,27 @@ fast_dmatnorm <- function(Z, M, U, V, log=TRUE, Precision=FALSE, tol=1e-8) {
   # check for nas
   # cholesky check - pos definite
   check_matnorm(M,U,V,tol)
-  
-  
-  Ru <- chol(U)
-  Rv <- chol(V)
-  
-  # solving for A
-  D <- Z - M 
-  A2 = forwardsolve(Ru, D, upper.tri=TRUE,transpose=TRUE)
-  
-  A = t(forwardsolve(t(Rv), t(A2)))
-  
-  #A = A2 %*% solve(Rv)
-  # calculate log density first
-  # rcpp?
-  numerator = -0.5 * sum(A^2)
-  # denom correct and matches
-  denom = (n*p/2)*log(2*pi) + sum(n*log(diag(Rv))) + sum(p*log(diag(Ru)))
-  
-  log.dens = numerator - denom
+
+    Ru <- chol(U)
+    Rv <- chol(V)
+    
+    # solving for A
+    D <- Z - M 
+
+    # calculate log density first
+    # RCPP for sum(A^2)
+  if (!Precision) {
+    A2 = forwardsolve(Ru, D, upper.tri=TRUE,transpose=TRUE)
+    A = t(forwardsolve(t(Rv), t(A2)))
+    numerator = -0.5 * sum(A^2)
+    denom = (n*p/2)*log(2*pi) + sum(n*log(diag(Rv))) + sum(p*log(diag(Ru)))
+  } else {
+    B = Ru %*% D %*% t(Rv)
+    numerator = -0.5 * sum(B^2)
+    denom = (n*p/2)*log(2*pi) - sum(n*log(diag(Rv))) - sum(p*log(diag(Ru)))
+  }
+    
+    log.dens = numerator - denom
   
   if (log) {
     return(log.dens)
