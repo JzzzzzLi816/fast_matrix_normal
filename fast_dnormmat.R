@@ -1,3 +1,4 @@
+sourceCpp("fast_matrixNormal.cpp")
 fast_dmatnorm <- function(Z, M, U, V, log=TRUE, Precision=FALSE, tol=1e-8) {
   if(!is.null(M)){
     n <- nrow(M)
