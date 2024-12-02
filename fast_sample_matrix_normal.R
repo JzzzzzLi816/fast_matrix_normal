@@ -1,29 +1,35 @@
-sample_matrix_normal <- function(n = 10,p=5, M=NULL, U=NULL, V=NULL){
- 
+sample_matrix_normal <- function(num_samp = 1, n = 10,p=5, M=NULL, U_cov=NULL, V_cov=NULL, U_prec = NULL, V_prec = NULL, useCov = TRUE){
   if(!is.null(M)){
     n <- nrow(M)
     p <- ncol(M)
-  } 
-  if(!is.null(U)){
-    n <- ncol(U)
-  } 
-  if(!is.null(V)){
-    p <- ncol(V)
-  } 
-  if(is.null(U)){
-    U <- diag(n)
-  }
-  if(is.null(V)){
-    V <- diag(p)
   }
   if(is.null(M)){
     M = matrix(0,nrow=n,ncol=p)
   }
-  Ru <- chol(U)
-  Rv <- chol(V)
-  Z = matrix(rnorm(n*p),nrow=n,ncol=p)
-  Y <- M + crossprod(Ru,Z)%*%Rv
-  return(Y)
+  result <- array(rnorm(n * p * num_samp), dim = c(n, p, num_samp))
+  if (useCov) {
+    if(is.null(U_cov)) {
+      U_cov <- diag(n)
+    }
+    if (is.null(V_cov)) {
+      V_cov <- diag(p)
+    }
+    Ru = chol(U_cov)
+    Rv = chol(V_cov)
+    return(sapply(1:num_samp, function(i) M + crossprod(Ru, result[,,i]) %*% Rv))
+  } else {
+    if(is.null(U_prec)) {
+      U_prec <- diag(n)
+    }
+    if (is.null(V_prec)) {
+      V_prec <- diag(p)
+    }
+    Ru = chol(U_prec)
+    Rv = chol(V_prec)
+    Ru_inv = backsolve(Ru, diag(nrow(Ru)))
+    Rv_inv = chol(Rv, diag(nrow(Rv)))
+    return(sapply(1:num_samp, function(i) M + tcrossprod(Ru_inv %*% result[,,i], Rv_inv)))
+ }
 }
 
 n = 100
