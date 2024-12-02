@@ -1,6 +1,12 @@
 
 
-fast_pnormmat <-function(Z, M, U, V, log=TRUE, Precision=FALSE, tol=1e-8) {
+fast_pnormmat <-function(Z, 
+                         M, 
+                         U, 
+                         V, 
+                         log=TRUE, 
+                         Precision=FALSE, 
+                         tol=1e-8) {
   dc = dim_check(M,U,V)
   M <- dc$M
   U <- dc$U
@@ -8,7 +14,7 @@ fast_pnormmat <-function(Z, M, U, V, log=TRUE, Precision=FALSE, tol=1e-8) {
   n <- dc$n
   p <- dc$p
   
-  check_matnorm(M,U,V,tol)
+  check_matnorm(Z,M,U,V,tol)
   
   # If the matrix is large, we use monte carlo integration;
   # If the matrix is smaller, we use vectorization and Kronecker method.
