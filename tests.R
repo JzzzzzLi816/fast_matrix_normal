@@ -9,9 +9,10 @@ M <- cbind(stats::rnorm(10, 435, 296), stats::rnorm(10, 27, 11))
 #V <- matrix(rnorm(1000*1000))
 V <- matrix(c(87, 13, 13, 112), nrow = 2, ncol = 2, byrow = TRUE)
 #' V # Right covariance matrix (2 x 2), say the covariance between parameters.
-U <- diag(10) # Block of left-covariance matrix ( 84 x 84), say the covariance between subjects.
+U <- diag(10) # Block of left-covariance matrix, say the covariance between subjects.
 
 # check output matches below
+# have to import bc functions below have checks removed
 fast_dmatnorm(A, M, U, V)
 fast_dmatnorm(A, M, U, V, log = FALSE)
 
@@ -35,6 +36,7 @@ microbenchmark(
 
 
 # bigger speed check vs matrixNormal
+# try n=[10,100,1000]
 n <- 100
 p <- 30
 random_matrixU <- matrix(rnorm(n^2), nrow = n, ncol = n)
@@ -102,7 +104,7 @@ fast_dmatnorm <- function(Z, M, U, V, log=TRUE, Precision=FALSE, tol=1e-8) {
 }
 
 microbenchmark(
-  Ours = fast_dmatnorm(D, M, U, V),
-  matnorm = dmatnorm(D, M, U, V),
+  fast_matnorm_n100_p30 = fast_dmatnorm(D, M, U, V),
+  matnorm_n100_p30 = dmatnorm(D, M, U, V),
   times = 100
 )
