@@ -51,8 +51,6 @@ fast_rmatnorm <- function(num_samp = 1, n = 10, p = 5, M = NULL, U_cov = NULL, V
     if (is.null(V_prec)) {
       V_prec <- diag(p)
     }
-    
-    # Cholesky decomposition and inversion of precision matrices
     Ru <- chol(U_prec)
     Rv <- chol(V_prec)
     Ru_inv <- backsolve(Ru, diag(nrow(Ru)))
@@ -84,7 +82,6 @@ for (n in n_list) {
   M = n_MUV$M
   U = n_MUV$U
   V = n_MUV$V
-  print(n)
   fast_time = c(fast_time, system.time(fast_rmatnorm(M = M, U_cov = U, V_cov = V))[["elapsed"]])
   matrixNormal_time = c(matrixNormal_time, system.time(matrixNormal::rmatnorm(M = M, U = U, V = V))[["elapsed"]])
 }
@@ -94,34 +91,40 @@ lines(x = n_list, y = matrixNormal_time, type = "l", col = "blue")
 legend("topleft", legend = c("fast matrix normal sampling", "original matrix normal sampling"), col = c("red", "blue"), lty = 1)
 
 
-# 2 different test sets
-# to make sure the output is the same
-A <- datasets::CO2[1:10, 4:5]
-#A <- matrix(rnorm(10000*2, 5, 2), nrow = 10000, ncol = 2)
-M <- cbind(stats::rnorm(10, 435, 296), stats::rnorm(10, 27, 11))
-#V <- matrix(rnorm(1000*1000))
-V <- matrix(c(87, 13, 13, 112), nrow = 2, ncol = 2, byrow = TRUE)
-#' V # Right covariance matrix (2 x 2), say the covariance between parameters.
-U <- diag(10) # Block of left-covariance matrix, say the covariance between subjects.
+# Input parameters
+M <- cbind(stats::rnorm(10, 435, 296), stats::rnorm(10, 27, 11))  # Mean matrix
+V <- matrix(c(87, 13, 13, 112), nrow = 2, ncol = 2, byrow = TRUE)  # Right covariance
+U <- diag(10)  # Left covariance
+n <- nrow(M)  # Rows of M
+p <- ncol(M)  # Columns of M
 
-
-multi_fast = fast_rmatnorm(num_samp = 1000, M = M , U_cov = U, V_cov = V)
-sampled_mean = apply(multi_fast, c(1, 2), mean)
-MSE(M, sampled_mean)
-flattened_samples <- matrix(NA, nrow = 1000, ncol = n * p)
-for (i in 1:1000) {
-  flattened_samples[i, ] <- as.vector(multi_fast[,,i])
+res_gen = function(num_samp, true_M, true_U, true_V, multi_fast) {
+  n = nrow(true_U)
+  p = nrow(true_V)
+  sampled_mean = apply(multi_fast, c(1, 2), mean)
+  mse_mean = MSE(true_M, sampled_mean)
+  flattened_samples = matrix(NA, nrow = num_samp, ncol = n * p)
+  for (i in 1:num_samp) {
+    flattened_samples[i, ] = as.vector(multi_fast[,,i])
+  }
+  empirical_cov = cov(flattened_samples)
+  theoretical_cov = kronecker(V, U)
+  mse_cov = MSE(empirical_cov, theoretical_cov)
+  return(list(mse_mean = mse_mean, mse_cov = mse_cov))
 }
-empirical_cov = cov(flattened_samples)
-dim(empirical_cov)
-theoretical_cov = kronecker(V, U)
-dim(theoretical_cov)
-MSE(empirical_cov, theoretical_cov)
 
+
+# cov_case 
+multi_fast_1000 = fast_rmatnorm(num_samp = 1000, M = M, U_cov = U, V_cov = V)
+multi_fast_10000 = fast_rmatnorm(num_samp = 10000, M = M, U_cov = U, V_cov = V)
+
+res_gen(1000, M, U, V, multi_fast_1000)
+res_gen(10000, M, U, V, multi_fast_10000)
+# precision case
 U_prec = solve(U)
 V_prec = solve(V)
-multi_fast_prec = fast_rmatnorm(num_samp = 1000, M, U_prec = U, V_prec = V, useCov = FALSE)
-vec_fast_prec = apply(multi_fast_prec, c(1, 2), c)
-empirical_cov_prec = cov(vec_fast_prec)
-MSE(empirical_cov_prec, theoretical_cov)
+multi_fast_1000_prec = fast_rmatnorm(num_samp = 1000, M = M, U_prec = U_prec, V_prec = V_prec, useCov = FALSE)
+multi_fast_10000_prec = fast_rmatnorm(num_samp = 10000, M = M, U_prec = U_prec, V_prec = V_prec, useCov = FALSE)
+res_gen(1000, M, U, V, multi_fast_1000_prec)
+res_gen(10000, M, U, V, multi_fast_10000_prec)
 
