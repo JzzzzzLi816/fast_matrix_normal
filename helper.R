@@ -40,6 +40,9 @@ is.pos.def <- function(X, tol=1e-8) {
 
 # MATRIX CHECK
 check_matnorm <- function(M, U, V, tol=1e-8) {
+  if (anyNA(Z)) {
+    stop("Z contains missing values.", call. = FALSE)
+  }
   if (anyNA(M)) {
     stop("M contains missing values.", call. = FALSE)
   }
