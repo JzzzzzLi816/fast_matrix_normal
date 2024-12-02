@@ -73,23 +73,25 @@ MSE = function(true_val, est_val) {
   mean((true_val - est_val)^2)
 }
 
-n_list = 10:200
-p = 30
-fast_time = c()
-matrixNormal_time = c()
-for (n in n_list) {
-  n_MUV = sim_func_par(n, p)
-  M = n_MUV$M
-  U = n_MUV$U
-  V = n_MUV$V
-  fast_time = c(fast_time, system.time(fast_rmatnorm(M = M, U_cov = U, V_cov = V))[["elapsed"]])
-  matrixNormal_time = c(matrixNormal_time, system.time(matrixNormal::rmatnorm(M = M, U = U, V = V))[["elapsed"]])
+n_list = seq(10, 200, 10)
+p = 20
+fast_time <- numeric(length(n_list))
+matrixNormal_time <- numeric(length(n_list))
+for (i in seq_along(n_list)) {
+  n <- n_list[i]
+  n_MUV <- sim_func_par(n, p)
+  M <- n_MUV$M
+  U <- n_MUV$U
+  V <- n_MUV$V
+  fast_time[i] <- system.time(fast_rmatnorm(M = M, U_cov = U, V_cov = V))[["elapsed"]]
+  matrixNormal_time[i] <- system.time(matrixNormal::rmatnorm(M = M, U = U, V = V))[["elapsed"]]
 }
 
 plot(x = n_list, y = fast_time, type = "l", col = "red", ylim = c(min(matrixNormal_time), max(matrixNormal_time)), xlab = "n", ylab = "Time consumed in second")
 lines(x = n_list, y = matrixNormal_time, type = "l", col = "blue")
 legend("topleft", legend = c("fast matrix normal sampling", "original matrix normal sampling"), col = c("red", "blue"), lty = 1)
 
+plot(x = n_list, y = fast_time, type = "l")
 
 # Input parameters
 M <- cbind(stats::rnorm(10, 435, 296), stats::rnorm(10, 27, 11))  # Mean matrix
