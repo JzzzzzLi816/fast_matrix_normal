@@ -12,7 +12,7 @@ fast_dmatnorm <- function(Z, M, U, V, log=TRUE, Precision=FALSE, tol=1e-8) {
   #  M nxp
   # check for nas
   # cholesky check - pos definite
-   check_matnorm(M,U,V,tol)
+   check_matnorm(Z,M,U,V,tol)
 
     Ru <- chol(U)
     Rv <- chol(V)
