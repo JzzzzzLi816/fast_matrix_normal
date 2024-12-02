@@ -1,4 +1,4 @@
-sample_matrix_normal <- function(num_samp = 1, n = 10, p = 5, M = NULL, U_cov = NULL, V_cov = NULL, U_prec = NULL, V_prec = NULL, useCov = TRUE) {
+fast_rmatnorm <- function(num_samp = 1, n = 10, p = 5, M = NULL, U_cov = NULL, V_cov = NULL, U_prec = NULL, V_prec = NULL, useCov = TRUE) {
   if (!is.null(M)) {
     n <- nrow(M)
     p <- ncol(M)
