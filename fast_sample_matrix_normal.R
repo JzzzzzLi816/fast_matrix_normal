@@ -7,8 +7,6 @@ sample_matrix_normal <- function(num_samp = 1, n = 10, p = 5, M = NULL, U_cov = 
     M <- matrix(0, nrow = n, ncol = p)
   }
   
-  # Generate random samples in a 3D array
-  
   if (useCov) {
     # Default covariance matrices
     if (is.null(U_cov)) {
@@ -31,7 +29,7 @@ sample_matrix_normal <- function(num_samp = 1, n = 10, p = 5, M = NULL, U_cov = 
       for (i in 1:num_samp) {
         return_res[,,i] <- M + crossprod(Ru, Z[,,i]) %*% Rv
       }
-      return(return_res)  # Add return here
+      return(return_res)
     }
     
   } else {
