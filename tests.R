@@ -35,18 +35,6 @@ microbenchmark(
 )
 
 
-# bigger speed check vs matrixNormal
-# try n=[10,100,1000]
-n <- 100
-p <- 30
-random_matrixU <- matrix(rnorm(n^2), nrow = n, ncol = n)
-random_matrixV <- matrix(rnorm(p^2), nrow = p, ncol = p)
-
-D <- matrix(rnorm(n * p, mean = 2, sd = 6), nrow = n, ncol = p)
-M <- matrix(rnorm(n * p, mean = 1, sd = 2), nrow = n, ncol = p)
-U <- crossprod(random_matrixU) / (n - 1) 
-V <- crossprod(random_matrixV) / (p - 1) 
-
 #library(matrixNormal)
 
 # this is dmatnorm from matrixNormal without the checks
@@ -103,8 +91,68 @@ fast_dmatnorm <- function(Z, M, U, V, log=TRUE, Precision=FALSE, tol=1e-8) {
   }
 }
 
-microbenchmark(
-  fast_matnorm_n100_p30 = fast_dmatnorm(D, M, U, V),
-  matnorm_n100_p30 = dmatnorm(D, M, U, V),
+# bigger speed check vs matrixNormal
+# try n=[10,100,1000]
+create_mats <- function(n, p) {
+  random_matrixU <- matrix(rnorm(n^2), nrow = n, ncol = n)
+  random_matrixV <- matrix(rnorm(p^2), nrow = p, ncol = p)
+  
+  D <- matrix(rnorm(n * p, mean = 2, sd = 6), nrow = n, ncol = p)
+  M <- matrix(rnorm(n * p, mean = 1, sd = 2), nrow = n, ncol = p)
+  U <- crossprod(random_matrixU)
+  V <- crossprod(random_matrixV)
+  
+  return(list(D = D, M = M, U = U, V = V))
+}
+  
+
+res1 = create_mats(10,3)
+res_10.3 <- microbenchmark(
+  fast_matnorm = fast_dmatnorm(res1$D, res1$M, res1$U, res1$V),
+  matnorm = dmatnorm(res1$D, res1$M, res1$U, res1$V),
   times = 100
 )
+
+res2 = create_mats(100,30)
+res_100.30 <- microbenchmark(
+  fast_matnorm = fast_dmatnorm(res2$D, res2$M, res2$U, res2$V),
+  matnorm = dmatnorm(res2$D, res2$M, res2$U, res2$V),
+  times = 100
+)
+
+res3 = create_mats(1000,30)
+res_1000.30 <- microbenchmark(
+  fast_matnorm = fast_dmatnorm(res3$D, res3$M, res3$U, res3$V),
+  matnorm = dmatnorm(res3$D, res3$M, res3$U, res3$V),
+  times = 100
+)
+
+library(ggplot2)
+#bms = c(res_10.3, res_100.30, res_1000.30)
+autoplot(res_10.3) + 
+  labs(
+    title = "Execution time for n=10, p=3"
+  ) +
+  theme(
+    plot.title = element_text(hjust = 0.5)  # Center the title
+  ) +
+  geom_violin(fill = "darkblue")
+
+autoplot(res_100.30) + 
+  labs(
+    title = "Execution time for n=100, p=30"
+  ) +
+  theme(
+    plot.title = element_text(hjust = 0.5)  # Center the title
+  ) +
+  geom_violin(fill = "orange")
+
+
+autoplot(res_1000.30) + 
+  labs(
+    title = "Execution time for n=1000, p=30"
+  ) +
+  theme(
+    plot.title = element_text(hjust = 0.5)  # Center the title
+  ) +
+  geom_violin(fill = "darkgreen")
