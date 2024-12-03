@@ -81,3 +81,24 @@ check_matnorm <- function(Z = NULL, # For sampling function, there's no Z to che
   }
   return(invisible())
 }
+
+# function checking Lower and Upper for vectorization
+vectorized_check <- function(Lower, Upper, n, p) {
+  Lower <- if (is.matrix(Lower)) {
+    as.vector(Lower)
+  } else if (Lower == -Inf) {
+    rep(-Inf, n * p)
+  } else {
+    stop("Lower must be a numeric matrix or -Inf.")
+  }
+  
+  Upper <- if (is.matrix(Upper)) {
+    as.vector(Upper)
+  } else if (Upper == Inf) {
+    rep(Inf, n * p)
+  } else {
+    stop("Upper must be a numeric matrix or Inf.")
+  }
+  
+  return(list(Lower = Lower, Upper = Upper))
+}

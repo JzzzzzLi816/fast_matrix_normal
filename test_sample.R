@@ -77,21 +77,28 @@ n_list = seq(10, 200, 10)
 p = 20
 fast_time <- numeric(length(n_list))
 matrixNormal_time <- numeric(length(n_list))
-for (i in seq_along(n_list)) {
+for (i in seq_along(n_list)) { # Simulation will take a while, change times accordingly
   n <- n_list[i]
   n_MUV <- sim_func_par(n, p)
   M <- n_MUV$M
   U <- n_MUV$U
   V <- n_MUV$V
-  fast_time[i] <- system.time(fast_rmatnorm(M = M, U_cov = U, V_cov = V))[["elapsed"]]
-  matrixNormal_time[i] <- system.time(matrixNormal::rmatnorm(M = M, U = U, V = V))[["elapsed"]]
+  print(i)
+  fast_time[i] <- mean(microbenchmark::microbenchmark(fast_rmatnorm(M = M, U_cov = U, V_cov = V), times = 10)[,2])
+  matrixNormal_time[i] <- mean(microbenchmark::microbenchmark(matrixNormal::rmatnorm(M = M, U = U, V = V), times = 10)[,2])
 }
 
-plot(x = n_list, y = fast_time, type = "l", col = "red", ylim = c(min(matrixNormal_time), max(matrixNormal_time)), xlab = "n", ylab = "Time consumed in second")
-lines(x = n_list, y = matrixNormal_time, type = "l", col = "blue")
-legend("topleft", legend = c("fast matrix normal sampling", "original matrix normal sampling"), col = c("red", "blue"), lty = 1)
+ggplot2::ggplot(data = data.frame(n = n_list, fast_time = fast_time, matrixNormal_time = matrixNormal_time), 
+                ggplot2::aes(x = n)) +
+  ggplot2::geom_line(ggplot2::aes(y = fast_time, color = "fast sampler")) +
+  ggplot2::geom_line(ggplot2::aes(y = matrixNormal_time, color = "matrixNormal")) +
+  ggplot2::labs(x = "n", y = "average time", title = "time comsumption (nanoseconds)", color = "sampling function") +
+  ggplot2::scale_color_manual(values = c("fast sampler" = "red", "matrixNormal" = "blue"))
 
-plot(x = n_list, y = fast_time, type = "l")
+ggplot2::ggplot(data = data.frame(n = n_list, fast_time = fast_time), 
+                ggplot2::aes(x = n, y = fast_time)) +
+  ggplot2::geom_line(ggplot2::aes(y = fast_time), color = "red") +
+  ggplot2::labs(x = "n", y = "average time", title = "time comsumption of fast sampler (nanoseconds)")
 
 # Input parameters
 M <- cbind(stats::rnorm(10, 435, 296), stats::rnorm(10, 27, 11))  # Mean matrix
