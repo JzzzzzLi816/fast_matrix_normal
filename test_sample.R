@@ -137,3 +137,34 @@ multi_fast_10000_prec = fast_rmatnorm(num_samp = 10000, M = M, U_prec = U_prec, 
 res_gen(1000, M, U, V, multi_fast_1000_prec)
 res_gen(10000, M, U, V, multi_fast_10000_prec)
 
+
+
+
+# Test for fast_pnormmat.R
+n <- 3
+p <- 2
+M <- matrix(0, nrow = n, ncol = p)  # Mean matrix
+U_cov <- diag(n)  # Row covariance
+V_cov <- diag(p)  # Column covariance
+Lower <- matrix(-1, nrow = n, ncol = p)  # Lower bound
+Upper <- matrix(1, nrow = n, ncol = p)   # Upper bound
+
+# Run fast_pnormmat
+fast_pnormmat(
+  Lower = Lower, 
+  Upper = Upper, 
+  M = M, 
+  U_cov = U_cov, 
+  V_cov = V_cov, 
+  method = "vectorized", 
+  log = FALSE
+)
+
+pmatnorm(
+  Lower = Lower, 
+  Upper = Upper, 
+  M = M, 
+  U = U_cov, 
+  V = V_cov, 
+  method = "vectorized"
+)

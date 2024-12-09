@@ -3,14 +3,13 @@ sourceCpp("~/Desktop/Michigan/Biostat/BIOSTAT615/fast_matrix_normal/fast_matrixN
 source("~/Desktop/Michigan/Biostat/BIOSTAT615/fast_matrix_normal/helper.R")
 fast_dmatnorm <- function(Z, M, U, V, log=TRUE, Precision=FALSE, tol=1e-8) {
   dc = dim_check(M,U,V)
-  M <- dc$M
-  U <- dc$U
-  V <- dc$V
-  n <- dc$n
-  p <- dc$p
+  M <- dc[1]
+  U <- dc[2]
+  V <- dc[3]
+  n <- dc[4]
+  p <- dc[5]
   # U,v square
   #  M nxp
-  # check for nas
   # cholesky check - pos definite
    check_matnorm(Z,M,U,V,tol)
 

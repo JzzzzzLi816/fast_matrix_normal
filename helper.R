@@ -18,7 +18,7 @@ dim_check <- function(M, U, V) {
   if(is.null(M)){
     M = matrix(0,nrow=n,ncol=p)
   }
-  return(M,U,V, n, p)
+  return(list(M,U,V, n, p))
 }
 
 
@@ -85,6 +85,9 @@ check_matnorm <- function(Z = NULL, # For sampling function, there's no Z to che
 # function checking Lower and Upper for vectorization
 vectorized_check <- function(Lower, Upper, n, p) {
   Lower <- if (is.matrix(Lower)) {
+    if (dim(Lower)[1] != n | dim(Lower)[2] != p) {
+      stop("Lower must have dimensions ", n, "x", p, ".")
+    }
     as.vector(Lower)
   } else if (Lower == -Inf) {
     rep(-Inf, n * p)
@@ -93,6 +96,9 @@ vectorized_check <- function(Lower, Upper, n, p) {
   }
   
   Upper <- if (is.matrix(Upper)) {
+    if (dim(Upper)[1] != n | dim(Upper)[2] != p) {
+      stop("Upper must have dimensions ", n, "x", p, ".")
+    }
     as.vector(Upper)
   } else if (Upper == Inf) {
     rep(Inf, n * p)
