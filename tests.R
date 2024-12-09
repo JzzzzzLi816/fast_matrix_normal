@@ -1,5 +1,5 @@
 library(Rcpp)
-sourceCpp("~/Desktop/Michigan/Biostat/BIOSTAT615/fast_matrix_normal/fast_matrixNormal.cpp")
+sourceCpp("/Users/Hodor/Desktop/info/UMICHMASTER/2024FALL/BIOSTAT615/fast_matrix_normal/fast_matrixNormal.cpp")
 set.seed(123)
 # 2 different test sets
 # to make sure the output is the same
@@ -60,36 +60,6 @@ dmatnorm <- function(
   }
 }
 
-# fast dmatnorm with no checks
-fast_dmatnorm <- function(Z, M, U, V, log=TRUE, Precision=FALSE, tol=1e-8) {
-  Ru <- chol(U)
-  Rv <- chol(V)
-  
-  # solving for A
-  D <- Z - M 
-  
-  # calculate log density first
-  if (!Precision) {
-    A2 = forwardsolve(Ru, D, upper.tri=TRUE,transpose=TRUE)
-    A = t(forwardsolve(t(Rv), t(A2)))
-    # use Rcpp function
-    numerator = -0.5 * sum_of_squares(A)
-    denom = (n*p/2)*log(2*pi) + sum(n*log(diag(Rv))) + sum(p*log(diag(Ru)))
-  } else {
-    B = Ru %*% D %*% t(Rv)
-    # use Rcpp function
-    numerator = -0.5 * sum_of_squares(B)
-    denom = (n*p/2)*log(2*pi) - sum(n*log(diag(Rv))) - sum(p*log(diag(Ru)))
-  }
-  
-  log.dens = numerator - denom
-  
-  if (log) {
-    return(log.dens)
-  } else {
-    return(exp(log.dens))
-  }
-}
 
 # bigger speed check vs matrixNormal
 # try n=[10,100,1000]

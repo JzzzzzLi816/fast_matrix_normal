@@ -1,8 +1,4 @@
 
-# source("fast_dnormmat.R") # source the fast_dnormmat.R file
-# source("fast_sample_matrix_normal.R") # fast_rmatnorm
-# source("helper.R") # dim_check, check_matnorm, vectorized_check
-
 fast_pnormmat <-function(Lower = -Inf, # Lower bound matrix
                          Upper = Inf, # Upper bound matrix
                          M = NULL, # Mean matrix
@@ -24,7 +20,7 @@ fast_pnormmat <-function(Lower = -Inf, # Lower bound matrix
   } else {
     dim_check(M = M, U = U_prec, V = V_prec)
   }
-  M <- dc[1]; n <- dc[4]; p <- dc[5]
+  M <- dc[[1]]; n <- dc[[4]]; p <- dc[[5]]
   
   # Check Lower and Upper bounds using vectorized_check
   bounds <- vectorized_check(Lower, Upper, n, p)
@@ -53,10 +49,18 @@ fast_pnormmat <-function(Lower = -Inf, # Lower bound matrix
   } else {
     # Monte Carlo method
     if (is.null(N)) {
-      N <- n*p*10  # Adaptive sample size
+      N <- max(n*p*100)  # Adaptive sample size
     }
     # Use our sampler
-    samples <- fast_rmatnorm(num_samp = N, n = n, p = p, M = M, U = U, V = V, useCov = useCov)
+    samples <- fast_rmatnorm(num_samp = N, 
+                             n = n, 
+                             p = p, 
+                             M = M, 
+                             U_cov = U, 
+                             V_cov = V, 
+                             U_prec = U, 
+                             V_prec = V, 
+                             useCov = useCov)
     within_bounds <- sweep(samples, c(1, 2), Lower, `>=`) & sweep(samples, c(1, 2), Upper, `<=`)
     valid_samples <- apply(within_bounds, 3, all)
     count <- sum(valid_samples)

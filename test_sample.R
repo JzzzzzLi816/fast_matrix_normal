@@ -156,7 +156,7 @@ fast_pnormmat(
   M = M, 
   U_cov = U_cov, 
   V_cov = V_cov, 
-  method = "vectorized", 
+  method = "naive_monte_carlo", 
   log = FALSE
 )
 
@@ -165,6 +165,5 @@ pmatnorm(
   Upper = Upper, 
   M = M, 
   U = U_cov, 
-  V = V_cov, 
-  method = "vectorized"
+  V = V_cov
 )
