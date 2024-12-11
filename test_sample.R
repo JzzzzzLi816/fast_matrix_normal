@@ -140,16 +140,49 @@ res_gen(10000, M, U, V, multi_fast_10000_prec)
 
 
 
-# Test for fast_pnormmat.R
+# Test for fast_pnormmat.R on smaller matrices
+# compare the three methods in fast_pnormmat.R to pmvnorm in matrixNormal 
 n <- 3
 p <- 2
 M <- matrix(0, nrow = n, ncol = p)  # Mean matrix
-U_cov <- diag(n)  # Row covariance
-V_cov <- diag(p)  # Column covariance
-Lower <- matrix(-1, nrow = n, ncol = p)  # Lower bound
-Upper <- matrix(1, nrow = n, ncol = p)   # Upper bound
+matrixU <- matrix(c(1,2,0,2,-1,-2,1,3,0), nrow = n, ncol = n)
+matrixV <- matrix(c(2,0,1,4), nrow = p, ncol = p)
+U_cov <- crossprod(matrixU)
+V_cov <- crossprod(matrixV)
+Lower <- matrix(-10, nrow = n, ncol = p)  # Lower bound
+Upper <- matrix(10, nrow = n, ncol = p)   # Upper bound
+
+# Option for larger matrices (will be very slow)
+set.seed(2024)
+n <- 20
+p <- 20
+M = matrix(rnorm(n * p, mean = 1, sd = 2), nrow = n, ncol = p)
+random_matrixU <- matrix(rnorm(n^2), nrow = n, ncol = n)
+random_matrixV <- matrix(rnorm(p^2), nrow = p, ncol = p)
+U_cov = crossprod(random_matrixU)
+V_cov = crossprod(random_matrixV)
+Lower <- matrix(-50, nrow = n, ncol = p)  # Lower bound
+Upper <- matrix(50, nrow = n, ncol = p)   # Upper bound
 
 # Run fast_pnormmat
+fast_pnormmat(
+  Lower = Lower, 
+  Upper = Upper, 
+  M = M, 
+  U_cov = U_cov, 
+  V_cov = V_cov, 
+  method = "pmvnorm", 
+  log = FALSE
+)
+fast_pnormmat(
+  Lower = Lower, 
+  Upper = Upper, 
+  M = M, 
+  U_cov = U_cov, 
+  V_cov = V_cov, 
+  method = "sobol", 
+  log = FALSE
+)
 fast_pnormmat(
   Lower = Lower, 
   Upper = Upper, 
@@ -159,11 +192,42 @@ fast_pnormmat(
   method = "naive_monte_carlo", 
   log = FALSE
 )
-
 pmatnorm(
   Lower = Lower, 
   Upper = Upper, 
   M = M, 
   U = U_cov, 
   V = V_cov
+)
+# check the speed of the three methods. The two approximation methods are slow due to we need
+# larger number of samples to get a good approximation at such high dimensional objects
+microbenchmark(
+  fast_pnormmat(
+    Lower = Lower, 
+    Upper = Upper, 
+    M = M, 
+    U_cov = U_cov, 
+    V_cov = V_cov, 
+    method = "pmvnorm", 
+    log = FALSE
+  ),
+  fast_pnormmat(
+    Lower = Lower, 
+    Upper = Upper, 
+    M = M, 
+    U_cov = U_cov, 
+    V_cov = V_cov, 
+    method = "sobol", 
+    log = FALSE
+  ),
+  fast_pnormmat(
+    Lower = Lower, 
+    Upper = Upper, 
+    M = M, 
+    U_cov = U_cov, 
+    V_cov = V_cov, 
+    method = "naive_monte_carlo", 
+    log = FALSE
+  ),
+  times = 1
 )
